@@ -60,23 +60,26 @@ function renderCart(){
 function buyNow(id){ cart = {}; cart[id]=1; saveCart(); checkout(); }
 
 function checkout(){
-  const keys = Object.keys(cart);
-  if(keys.length===0){ alert('Cart is empty'); return }
-  let lines = [];
-  let total = 0;
-  keys.forEach(id=>{
-    const p = PRODUCTS.find(x=>x.id===id);
-    const q = cart[id];
-    lines.push(`${p.name} x${q} — ${formatPrice(p.price*q)}`);
-    total += p.price*q;
-  });
-  lines.push('---');
-  lines.push('Total: '+formatPrice(total));
+  (async ()=>{
+    const keys = Object.keys(cart);
+    if(keys.length===0){ alert('Cart is empty'); return }
+    const items = keys.map(id=>({ id, qty: cart[id] }));
+    const total = keys.reduce((s,id)=>{
+      const p = PRODUCTS.find(x=>x.id===id); return s + (p ? p.price * cart[id] : 0);
+    },0);
 
-  const subject = encodeURIComponent('Order — Fondazione Domenico Cirillo');
-  const body = encodeURIComponent('Hello,%0A%0AI would like to order the following items:%0A%0A' + lines.join('%0A') + '%0A%0A' + 'Name:%0A' + 'Address:%0A' + 'Email:%0A%0A' + 'Please reply with payment instructions.%0A%0AThank you.');
-  const mailto = `mailto:orders@example.com?subject=${subject}&body=${body}`;
-  window.location.href = mailto;
+    const customerName = prompt('Name for the order');
+    const address = prompt('Shipping address');
+    if(!customerName || !address){ alert('Name and address required'); return }
+
+    try{
+      const res = await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ customerName, address, items, total })});
+      if(!res.ok) throw new Error('Server error');
+      const data = await res.json();
+      if(data.approvalUrl){ window.location.href = data.approvalUrl; }
+      else { alert('Failed to create PayPal order. See console.'); console.error(data); }
+    }catch(err){ alert('Could not create order'); console.error(err); }
+  })();
 }
 
 window.addEventListener('DOMContentLoaded', ()=>{
