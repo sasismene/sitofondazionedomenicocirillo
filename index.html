@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fondazione Domenico Cirillo | Per i Giovani</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --light: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: var(--text); background: var(--light); }
+
+        /* Navigation */
+        nav { background: var(--white); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo { font-weight: bold; font-size: 1.5rem; color: var(--primary); letter-spacing: 1px; }
+        .nav-links { list-style: none; display: flex; }
+        .nav-links li { margin-left: 20px; }
+        .nav-links a { text-decoration: none; color: var(--primary); font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        /* Hero Section */
+        .hero { 
+            height: 80vh; 
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1517022812141-23620dba5c23?auto=format&fit=crop&q=80') center/cover; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--white); padding: 0 20px;
+        }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; max-width: 600px; margin-bottom: 2rem; font-style: italic; }
+        .btn { padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; text-decoration: none; font-weight: bold; transition: 0.3s; }
+        .btn-primary { background: var(--accent); color: var(--white); }
+        .btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+
+        /* Sections */
+        section { padding: 80px 10%; }
+        .section-title { text-align: center; margin-bottom: 50px; }
+        .section-title h2 { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; }
+        .section-title div { width: 50px; height: 3px; background: var(--accent); margin: 0 auto; }
+
+        /* About/Legacy */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+        .about-text p { margin-bottom: 15px; font-size: 1.1rem; }
+
+        /* Initiatives */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: var(--white); padding: 30px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-10px); }
+        .card i { font-size: 2.5rem; color: var(--accent); margin-bottom: 15px; }
+
+        /* Footer */
+        footer { background: var(--primary); color: var(--white); padding: 40px 10%; text-align: center; }
+        .socials { margin: 20px 0; }
+        .socials a { color: var(--white); margin: 0 10px; font-size: 1.5rem; }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">FONDAZIONE DOMENICO CIRILLO</div>
+        <ul class="nav-links">
+            <li><a href="#storia">La Storia</a></li>
+            <li><a href="#progetti">Progetti</a></li>
+            <li><a href="#contatti">Contatti</a></li>
+            <li><a href="#donazioni" style="color: var(--accent)">Dona Ora</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <h1>Per Domenico, Per il Futuro.</h1>
+        <p>"La sua luce continua a brillare attraverso le opportunità che creiamo per i giovani."</p>
+        <a href="#donazioni" class="btn btn-primary">Sostieni la Fondazione</a>
+    </section>
+
+    <section id="storia">
+        <div class="section-title">
+            <h2>Chi Siamo</h2>
+            <div></div>
+        </div>
+        <div class="grid">
+            <div class="about-img">
+                <img src="https://images.unsplash.com/photo-1523240693567-55024b12570d?auto=format&fit=crop&q=80" alt="Legacy" style="width: 100%; border-radius: 10px;">
+            </div>
+            <div class="about-text">
+                <h3>L'eredità di un ragazzo di 17 anni</h3>
+                <p>La Fondazione Domenico Cirillo nasce dal desiderio di trasformare un dolore immenso in una forza generatrice. Domenico era un ragazzo pieno di vita, sogni e generosità.</p>
+                <p>Oggi, il nostro obiettivo è onorare la sua memoria supportando i giovani nei loro percorsi di crescita, garantendo che nessuno debba rinunciare ai propri sogni per mancanza di supporto o risorse.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="progetti" style="background: #ebf2f7;">
+        <div class="section-title">
+            <h2>I Nostri Progetti</h2>
+            <div></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>Borse di Studio</h3>
+                <p>Aiutiamo studenti meritevoli a proseguire i loro studi in memoria di Domenico.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-running"></i>
+                <h3>Sport & Inclusione</h3>
+                <p>Promuoviamo l'accesso allo sport come strumento di unione e salute.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-heart"></i>
+                <h3>Supporto Psicologico</h3>
+                <p>Spazi di ascolto gratuiti per adolescenti in difficoltà.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="donazioni" style="text-align: center;">
+        <div class="section-title">
+            <h2>Fai la Differenza</h2>
+            <div></div>
+        </div>
+        <p style="max-width: 700px; margin: 0 auto 30px;">Ogni piccolo contributo aiuta la Fondazione Domenico Cirillo a mantenere vive le speranze di tanti giovani.</p>
+        <a href="#" class="btn btn-primary" style="font-size: 1.2rem;">Donazione Sicura (PayPal / IBAN)</a>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Fondazione Domenico Cirillo. Tutti i diritti riservati.</p>
+        <div class="socials">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fas fa-envelope"></i></a>
+        </div>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Codice Fiscale: 12345678900</p>
+    </footer>
+
+</body>
+</html>
