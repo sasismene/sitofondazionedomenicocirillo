@@ -51,7 +51,7 @@
 				<h3>${item.title}</h3>
 				<p>${item.desc}</p>
 				<div class="price">€${item.price.toFixed(2)}</div>
-				<label>Quantity: <input type="number" min="1" value="1" data-id="${item.id}" style="width:60px"></label>
+				<label>Quantity: <input type="number" min="0" value="0" data-id="${item.id}" style="width:60px"></label>
 			`;
 			itemsEl.appendChild(c);
 		});
