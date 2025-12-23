@@ -1,37 +1,99 @@
 <!doctype html>
 <html lang="en">
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<title>Merch — Fondazione Domenico Cirillo</title>
-	<link rel="stylesheet" href="styles.css">
-</head>
-<body>
-	<header class="site-header">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Merch Store</title>
+		<style>
+			body{font-family:Arial,Helvetica,sans-serif;margin:24px}
+			.product{display:flex;gap:24px;align-items:center}
+			.product img{width:180px;border:1px solid #ddd;padding:8px}
+			.controls{max-width:420px}
+			.field{margin:8px 0}
+		</style>
+	</head>
+	<body>
 		<h1>Merch</h1>
-		<p>Support the Fondazione — buy official merch.</p>
-	</header>
-
-	<main class="container">
-		<section id="products" class="product-grid" aria-label="Products"></section>
-
-		<aside class="cart" aria-label="Shopping cart">
-			<h2>Cart</h2>
-			<div id="cart-items" class="cart-items"></div>
-			<div class="cart-footer">
-				<div class="total">Total: <span id="cart-total">€0.00</span></div>
-				<div class="cart-actions">
-					<button id="checkout" class="btn primary">Checkout (email)</button>
-					<button id="clear-cart" class="btn">Clear</button>
+		<div class="product">
+			<img src="/merch/tshirt.jpg" alt="T-shirt" onerror="this.style.display='none'" />
+			<div class="controls">
+				<h2>Foundation T‑shirt</h2>
+				<p>High-quality cotton shirt — €20.00</p>
+				<div class="field">
+					<label>Name<br /><input id="name" placeholder="Full name" /></label>
 				</div>
+				<div class="field">
+					<label>Address<br /><textarea id="address" rows="3" placeholder="Shipping address"></textarea></label>
+				</div>
+				<div class="field">
+					<label>Quantity<br /><input id="pieces" type="number" min="1" value="1" /></label>
+				</div>
+				<div class="field">
+					<div id="paypal-button-container"></div>
+				</div>
+				<div id="status"></div>
 			</div>
-		</aside>
-	</main>
+		</div>
 
-	<footer class="site-footer">
-		<small>Designed for demonstration. Replace the email checkout with a real payment integration for production.</small>
-	</footer>
+		<script>
+		// Load PayPal SDK dynamically after getting client id from server
+		async function loadConfig(){
+			const res = await fetch('/api/config');
+			return res.json();
+		}
 
-	<script src="store.js" defer></script>
-</body>
+		function loadPayPal(clientId, currency){
+			return new Promise((resolve)=>{
+				const s = document.createElement('script');
+				s.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`;
+				s.onload = resolve;
+				document.head.appendChild(s);
+			});
+		}
+
+		async function setup(){
+			const cfg = await loadConfig();
+			if(!cfg.paypalClientId){
+				document.getElementById('status').innerText = 'Server missing PAYPAL_CLIENT_ID env var.';
+				return;
+			}
+			await loadPayPal(cfg.paypalClientId, cfg.currency || 'EUR');
+
+			const price = 20.00;
+
+			paypal.Buttons({
+				createOrder: async function(){
+					const pieces = parseInt(document.getElementById('pieces').value)||1;
+					const total = (price * pieces).toFixed(2);
+					const res = await fetch('/api/create-order', {
+						method: 'POST',
+						headers: {'Content-Type':'application/json'},
+						body: JSON.stringify({ total: parseFloat(total), currency: cfg.currency })
+					});
+					const data = await res.json();
+					return data.id;
+				},
+				onApprove: async function(data){
+					const name = document.getElementById('name').value || '';
+					const address = document.getElementById('address').value || '';
+					const pieces = parseInt(document.getElementById('pieces').value)||1;
+					const items = [{ sku: 'tshirt', name: 'T-shirt', unit_amount: { currency_code: cfg.currency, value: '20.00' } }];
+
+					const res = await fetch('/api/capture-order', {
+						method: 'POST',
+						headers: {'Content-Type':'application/json'},
+						body: JSON.stringify({ orderID: data.orderID, name, address, items, pieces })
+					});
+					const result = await res.json();
+					document.getElementById('status').innerText = 'Payment completed — thank you!';
+				},
+				onError: function(err){
+					document.getElementById('status').innerText = 'Payment error: ' + err;
+				}
+			}).render('#paypal-button-container');
+		}
+
+		setup().catch(e=>{document.getElementById('status').innerText = e.toString();console.error(e)});
+		</script>
+	</body>
 </html>
