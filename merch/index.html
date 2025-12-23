@@ -58,7 +58,7 @@
 
 		function gatherOrder() {
 			const qtys = {};
-			document.querySelectorAll('input[type=number][data-id]').forEach(i=>{ qtys[i.dataset.id]=parseInt(i.value)||1 });
+			document.querySelectorAll('input[type=number][data-id]').forEach(i=>{ qtys[i.dataset.id]=parseInt(i.value)||0 });
 			const orderItems = CATALOG.map(it=>({ id:it.id, title:it.title, price:it.price, qty: qtys[it.id] || 1 }))
 				.filter(i=>i.qty>0);
 			const total = orderItems.reduce((s,i)=>s + i.price * i.qty, 0);
