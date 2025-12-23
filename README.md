@@ -1,35 +1,22 @@
-# Merch site (Node.js) with PayPal Checkout + Payouts
+# Merch page + serverless order saving
 
-This project serves a simple merch page and a Node.js backend that:
-- creates PayPal Orders and captures them
-- optionally uses PayPal Payouts to forward captured funds to a configured receiver
-- persists order data in `order.db` (SQLite)
+This repository includes a demo merch page and a Node serverless endpoint that saves orders into `order.db`.
 
-Environment variables:
-- `PAYPAL_CLIENT_ID` (required)
-- `PAYPAL_SECRET` (required)
-- `PAYPAL_ENV` (optional, default `sandbox`, set to `live` for production)
-- `PAYPAL_PAYOUT_RECEIVER` (optional, an email to send Payouts to)
-- `CURRENCY` (optional, default `EUR`)
+Quick summary
+- Frontend: [merch/index.html](merch/index.html) — uses the PayPal JavaScript SDK. Replace `YOUR_PAYPAL_CLIENT_ID` in the script URL.
+- Backend: `api/save-order/index.js` — Node handler that writes order rows into `order.db` using `better-sqlite3`.
 
-Quick start (PowerShell):
+Notes on hosting
+- GitHub Pages serves only static files and cannot run the Node backend. Host the frontend on GitHub Pages and deploy the backend (the `api` folder) to a Node-capable serverless platform such as Vercel or Render.
 
-```powershell
-$env:PAYPAL_CLIENT_ID = 'your-sandbox-client-id'
-$env:PAYPAL_SECRET = 'your-sandbox-secret'
-# optional: $env:PAYPAL_PAYOUT_RECEIVER = 'receiver@example.com'
-npm install
-npm start
-```
+Deploying to Vercel (recommended)
+1. Install dependencies locally: `npm install`.
+2. Push to a GitHub repo connected to Vercel.
+3. Deploy the project on Vercel — the `api/save-order` file will become an endpoint at `/api/save-order` and create `order.db` in the function's writable filesystem during runtime (note ephemeral filesystem on some hosts).
 
-Open http://localhost:5000/merch/index.html
+Security & PayPal
+- Do not embed a secret access token in client-side code.
+- Use your PayPal client id in `merch/index.html` by replacing `YOUR_PAYPAL_CLIENT_ID` with your value.
 
-The server will create `order.db` on first run and expose these endpoints:
-- `GET /api/config` — returns `paypalClientId` and `currency`
-- `POST /api/create-order` — create a PayPal order (body: `{ total, currency }`)
-- `POST /api/capture-order` — capture and store an order (body: `{ orderID, name, address, items, pieces }`)
-- `GET /orders` — list saved orders
-
-Notes:
-- For sandbox testing use sandbox credentials and keep `PAYPAL_ENV` unset or set to `sandbox`.
-- PayPal Payouts requires that your account has Payouts permissions enabled; payouts will only run if `PAYPAL_PAYOUT_RECEIVER` is configured.
+Persistence
+- The endpoint writes `order.db` next to the project root when executed on a server that allows writing to the filesystem. For long-term persistence, use a managed DB (Postgres, MySQL, or a hosted SQLite file store) or push the DB to persistent storage.

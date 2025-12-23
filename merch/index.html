@@ -1,102 +1,111 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Merch Store</title>
-    <style>
-      body{font-family:Arial,Helvetica,sans-serif;margin:24px}
-      .product{display:flex;gap:24px;align-items:center}
-      .product img{width:180px;border:1px solid #ddd;padding:8px}
-      .controls{max-width:420px}
-      .field{margin:8px 0}
-    </style>
-  </head>
-  <body>
-    <h1>Merch</h1>
-    <div class="product">
-      <img src="/merch/tshirt.jpg" alt="T-shirt" onerror="this.style.display='none'" />
-      <div class="controls">
-        <h2>Foundation T‑shirt</h2>
-        <p>High-quality cotton shirt — €20.00</p>
-        <div class="field">
-          <label>Name<br /><input id="name" placeholder="Full name" /></label>
-        </div>
-        <div class="field">
-          <label>Address<br /><textarea id="address" rows="3" placeholder="Shipping address"></textarea></label>
-        </div>
-        <div class="field">
-          <label>Quantity<br /><input id="pieces" type="number" min="1" value="1" /></label>
-        </div>
-        <div class="field">
-          <div id="paypal-button-container"></div>
-        </div>
-        <div id="status"></div>
-      </div>
-    </div>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Merch — Fondazione Domenico Cirillo</title>
+	<style>
+		body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#f7f7f8;color:#111}
+		.wrap{max-width:900px;margin:40px auto;padding:20px}
+		header{display:flex;align-items:center;gap:16px}
+		.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px}
+		.card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+		.card img{width:100%;height:140px;object-fit:cover;border-radius:6px}
+		.card h3{margin:10px 0 6px;font-size:18px}
+		.card p{margin:0 0 10px;color:#555}
+		.card .price{font-weight:600;margin-bottom:8px}
+		footer{margin-top:30px;color:#666;font-size:14px}
+		.notice{background:#fffbe6;border:1px solid #ffe58f;padding:10px;border-radius:6px;margin-bottom:12px}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<header>
+			<h1>Merch</h1>
+		</header>
 
-    <script>
-    async function loadConfig(){
-      const res = await fetch('/api/config');
-      return res.json();
-    }
+		<div class="notice">This demo uses the PayPal JavaScript SDK (client-side). Replace <code>YOUR_PAYPAL_CLIENT_ID</code> before deploying. A small Node serverless endpoint (`/api/save-order`) is included to persist orders into `order.db` when deployed to a platform that supports Node functions (Vercel, Render, etc.). GitHub Pages is static and cannot run the server component.</div>
 
-    function loadPayPal(clientId, currency){
-      return new Promise((resolve)=>{
-        const s = document.createElement('script');
-        s.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`;
-        s.onload = resolve;
-        document.head.appendChild(s);
-      });
-    }
+		<div id="items" class="items"></div>
 
-    async function setup(){
-      const cfg = await loadConfig();
-      if(!cfg.paypalClientId){
-        document.getElementById('status').innerText = 'Server missing PAYPAL_CLIENT_ID env var.';
-        return;
-      }
-      await loadPayPal(cfg.paypalClientId, cfg.currency || 'EUR');
+		<div id="paypal-buttons" style="margin-top:20px"></div>
 
-      const price = 20.00;
+		<footer>
+			<p>Payments handled by PayPal. Orders will be recorded to the backend when capture completes.</p>
+		</footer>
+	</div>
 
-      paypal.Buttons({
-        createOrder: async function(){
-          const pieces = parseInt(document.getElementById('pieces').value)||1;
-          const total = (price * pieces).toFixed(2);
-          const res = await fetch('/api/create-order', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ total: parseFloat(total), currency: cfg.currency })
-          });
-          const data = await res.json();
-          return data.id || data.token || data.name; // id for orders
-        },
-        onApprove: async function(data){
-          const name = document.getElementById('name').value || '';
-          const address = document.getElementById('address').value || '';
-          const pieces = parseInt(document.getElementById('pieces').value)||1;
-          const items = [{ sku: 'tshirt', name: 'T-shirt', unit_amount: { currency_code: cfg.currency, value: '20.00' } }];
+	<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+	<script>
+		// Simple merch catalog
+		const CATALOG = [
+			{ id: 'shirt001', title: 'Foundation Tee', price: 20.00, desc: '100% cotton T-shirt', img: 'https://placehold.co/600x400?text=Shirt' },
+			{ id: 'mug001', title: 'Foundation Mug', price: 12.50, desc: 'Ceramic mug', img: 'https://placehold.co/600x400?text=Mug' }
+		];
 
-          const res = await fetch('/api/capture-order', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ orderID: data.orderID || data.orderId || data.id, name, address, items, pieces })
-          });
-          const result = await res.json();
-          if(result.error) {
-            document.getElementById('status').innerText = 'Error: ' + result.error;
-          } else {
-            document.getElementById('status').innerText = 'Payment completed — thank you!';
-          }
-        },
-        onError: function(err){
-          document.getElementById('status').innerText = 'Payment error: ' + err;
-        }
-      }).render('#paypal-button-container');
-    }
+		const itemsEl = document.getElementById('items');
+		CATALOG.forEach(item => {
+			const c = document.createElement('div'); c.className='card';
+			c.innerHTML = `
+				<img src="${item.img}" alt="${item.title}">
+				<h3>${item.title}</h3>
+				<p>${item.desc}</p>
+				<div class="price">€${item.price.toFixed(2)}</div>
+				<label>Quantity: <input type="number" min="1" value="1" data-id="${item.id}" style="width:60px"></label>
+			`;
+			itemsEl.appendChild(c);
+		});
 
-    setup().catch(e=>{document.getElementById('status').innerText = e.toString();console.error(e)});
-    </script>
-  </body>
+		function gatherOrder() {
+			const qtys = {};
+			document.querySelectorAll('input[type=number][data-id]').forEach(i=>{ qtys[i.dataset.id]=parseInt(i.value)||1 });
+			const orderItems = CATALOG.map(it=>({ id:it.id, title:it.title, price:it.price, qty: qtys[it.id] || 1 }))
+				.filter(i=>i.qty>0);
+			const total = orderItems.reduce((s,i)=>s + i.price * i.qty, 0);
+			return { items: orderItems, total };
+		}
+
+		// Render PayPal Buttons
+		paypal.Buttons({
+			style: { layout: 'vertical' },
+			createOrder: function(data, actions) {
+				const order = gatherOrder();
+				if(order.items.length === 0) return alert('Add at least one item');
+				return actions.order.create({
+					purchase_units: [{
+						amount: { value: order.total.toFixed(2) },
+						description: 'Fondazione merch purchase'
+					}]
+				});
+			},
+			onApprove: function(data, actions) {
+				return actions.order.capture().then(function(details) {
+					const payer = details.payer || {};
+					const order = gatherOrder();
+					const payload = {
+						name: (payer.name && (payer.name.given_name + ' ' + payer.name.surname)) || details.payer_name || 'unknown',
+						address: (details.purchase_units && details.purchase_units[0].shipping && details.purchase_units[0].shipping.address) || {},
+						pieces: order.items.reduce((s,i)=>s+i.qty,0),
+						done: 1,
+						paypal_order: details,
+						items: order.items
+					};
+
+					// send to backend to persist
+					fetch('/api/save-order', {
+						method: 'POST',
+						headers: {'Content-Type':'application/json'},
+						body: JSON.stringify(payload)
+					}).then(r=>r.json()).then(res=>{
+						if(res && res.ok) alert('Thank you — order saved (id ' + res.id + ')');
+						else alert('Payment processed but saving order failed');
+					}).catch(err=>{
+						console.error(err);
+						alert('Payment processed but saving order failed');
+					});
+				});
+			}
+		}).render('#paypal-buttons');
+	</script>
+</body>
 </html>
